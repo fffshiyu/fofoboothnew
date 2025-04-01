@@ -4,6 +4,26 @@ import { useRouter } from 'vue-router'
 
 const store = useFrameStore()
 const router = useRouter()
+
+// 图片加载失败时的处理
+function onImageError(event: Event, frame: any) {
+  const imgElement = event.target as HTMLImageElement;
+  const container = imgElement.parentElement;
+  
+  if (container) {
+    // 设置黄色背景
+    container.style.backgroundColor = '#FFFAC8';
+    
+    // 显示图片编号和分类
+    const infoElement = document.createElement('div');
+    infoElement.className = 'frame-info';
+    infoElement.innerHTML = `<span class="frame-category">${frame.category}</span><span class="frame-number">${frame.imageIndex}</span>`;
+    container.appendChild(infoElement);
+    
+    // 隐藏失败的图片
+    imgElement.style.display = 'none';
+  }
+}
 </script>
 
 <template>
@@ -15,8 +35,13 @@ const router = useRouter()
         <div 
           v-for="frame in store.selectedFrames" 
           :key="frame.id" 
-          class="bg-white rounded-xl overflow-hidden shadow-lg">
-          <img :src="frame.src" :alt="frame.id" class="w-full h-full object-cover" />
+          class="bg-white rounded-xl overflow-hidden shadow-lg relative">
+          <!-- 使用实际图片，有备用显示 -->
+          <img 
+            :src="frame.imagePath" 
+            :alt="`${frame.category} ${frame.imageIndex}`"
+            class="w-full h-full object-cover"
+            @error="(e) => onImageError(e, frame)" />
         </div>
       </div>
       
@@ -32,4 +57,30 @@ const router = useRouter()
       </div>
     </div>
   </div>
-</template> 
+</template>
+
+<style scoped>
+.frame-info {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+
+.frame-number {
+  display: block;
+  font-size: 28px;
+  font-weight: bold;
+  color: rgba(0, 0, 0, 0.5);
+}
+
+.frame-category {
+  display: block;
+  font-size: 14px;
+  font-weight: bold;
+  text-transform: uppercase;
+  color: rgba(0, 0, 0, 0.7);
+  margin-bottom: 5px;
+}
+</style> 
